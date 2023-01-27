@@ -19,9 +19,9 @@ listOfCorporations = ["Ace", "Aphrodite", "Astrodrill", "Arcadian Communities", 
                       "Satrun Systems", "Septem Tribus", "Splice",  \
                       "Stormcraft", "Teractor", "Terralabs", "Thermex", \
                       "Thorgate", "Tycho", "United Nations Mars Initiative", \
-                      "Utopia Invest", "Valles Trust", "Viron", "Vitor"]
+                      "Utopia Invest", "Valley Trust", "Viron", "Vitor"]
     
-listOfMaps = ["Tharsis", "Elysium", "Hellas"]
+listOfMaps = ["Tharsis", "Elysium", "Hellas", "Terra Cimmeria", "Utopia Planitia", "Arabia Terra", "Vastitas Borealis"]
 
 nameOfPlaces = {1:"Erster: ", 2: "Zweiter: ", 3:"Dritter: ", \
                 4:"Vierter: ", 5:"Fünfter: "}
