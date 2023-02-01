@@ -1,0 +1,7 @@
+name: TM-environment
+channels:
+  - conda-forge
+dependencies:
+  - matplotlib
+  - ZODB
+  - PyGithub
