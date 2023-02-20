@@ -36,8 +36,13 @@ class dbConnection:
     def upload(self, access):
         now = datetime.now().strftime("%d/%m/%Y %H:%M")
         commit_message = "Database Update: " + now
+        files_to_upload = [self.dbName, "Leaderboard.json"]
         
-        GitHubInterface.uploadDatabase(access, self.dbName, commit_message)
+        GitHubInterface.uploadDatabase(access, files_to_upload, commit_message)
+    
+    "Downloads the Filestorage -> split environment and content"
+    def download(self):
+        GitHubInterface.downloadDatabase(self.dbName)
         
     def __del__(self):
         self.close()
