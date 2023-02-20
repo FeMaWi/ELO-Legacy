@@ -30,8 +30,7 @@ def uploadDatabase(access, files_to_upload, commit_message):
             with open(entry) as input_file:
                 data = input_file.read()
                 element = InputGitTreeElement(entry, '100644', 'blob', data)
-#    element = InputGitTreeElement(filestorage_name, '100644', type='blob', sha=blob.sha)
-    element_list.append(element)
+        element_list.append(element)
     tree = repo.create_git_tree(element_list, base_tree)
     parent = repo.get_git_commit(master_sha)
     commit = repo.create_git_commit(commit_message, tree, [parent])
@@ -41,7 +40,7 @@ def uploadDatabase(access, files_to_upload, commit_message):
 def downloadDatabase(filestorage_name):
     url = 'https://raw.githubusercontent.com/FeMaWi/ELO/databaseUpdates/' + filestorage_name
     req = requests.get(url)
-    f = open('TheRealShit.fs', 'w+b')
+    f = open(filestorage_name, 'w+b')
     f.write(req.content)
     f.close()
     return

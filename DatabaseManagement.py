@@ -26,6 +26,7 @@ class dbConnection:
     
     def __init__(self, dbName):
         self.dbName = dbName
+        self.download()
         self.storage = ZODB.FileStorage.FileStorage(self.dbName)
         self.db = ZODB.DB(self.storage)
         self.connection = self.db.open()
