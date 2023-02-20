@@ -16,6 +16,7 @@ from persistent import Persistent
 import matplotlib.pyplot as plt
 
 import ELO
+import TM_util
 import GitHubInterface
 
 
@@ -25,6 +26,7 @@ class dbConnection:
     
     def __init__(self, dbName):
         self.dbName = dbName
+        self.download()
         self.storage = ZODB.FileStorage.FileStorage(self.dbName)
         self.db = ZODB.DB(self.storage)
         self.connection = self.db.open()
@@ -35,8 +37,13 @@ class dbConnection:
     def upload(self, access):
         now = datetime.now().strftime("%d/%m/%Y %H:%M")
         commit_message = "Database Update: " + now
+        files_to_upload = [self.dbName, "Leaderboard.json"]
         
-        GitHubInterface.uploadDatabase(access, self.dbName, commit_message)
+        GitHubInterface.uploadDatabase(access, files_to_upload, commit_message)
+    
+    "Downloads the Filestorage -> split environment and content"
+    def download(self):
+        GitHubInterface.downloadDatabase(self.dbName)
         
     def __del__(self):
         self.close()
@@ -80,8 +87,11 @@ class Match(Persistent):
                 self.expansions     = expansions
             
     "For example for print() calls" 
+#    def __repr__(self):
+#        return f'Match({self.matchDate},{self.endResult})'
+    
     def __repr__(self):
-        return f'Match({self.matchDate},{self.endResult})'
+        return str(self.__dict__)
     
     "Returns only the names of the Players"
     def getResult(self):
@@ -95,6 +105,20 @@ class Match(Persistent):
         print("Date: %s" % self.matchDate)
         for player in self.endResult:
             print(f'{player[0]:15} {player[1]:4} {player[2]:20}')
+    
+    "Returns the Match data ready to be entered in a CSV file"
+    "Format: date, all the places with score and additional info, expansions"
+    def csvOutput (self, maxPlayers=5):
+        outputList = [self.matchDate]
+        for playerResult in self.endResult:
+            for entry in playerResult:
+                outputList.append(entry)
+        for i in range(3*(maxPlayers - len(self.endResult))):
+            outputList.append("")
+        for i in range(1,5):
+            outputList.append(TM_util.nameOfExpansions[i] in self.getExpansions())
+        outputList.append([x for x in self.getExpansions() if x not in list(TM_util.nameOfExpansions.values())][0])
+        return outputList
         
     
 "A player is defined by name, history of rank and number of matches"
@@ -105,8 +129,11 @@ class Player(Persistent):
         self.ELOrank        = [1500]
         self.nbrOfMatches   = 0
         
+#    def __repr__(self):
+#        return repr((self.name,self.ELOrank[-1],self.nbrOfMatches))
+
     def __repr__(self):
-        return repr((self.name,self.ELOrank[-1],self.nbrOfMatches))
+        return str(self.__dict__)
     
     def currentRank(self):
         return self.ELOrank[-1]
@@ -266,9 +293,24 @@ class LeaderBoard(Persistent):
                 i += 1
                 match.printMatch() 
         if i == 0:
-            print("No joint matches between %s and %s so far." % (player1, player2))
- 
+            print("No joint matches between %s and %s so far." % (player1, player2))        
 
+    def getJSON(self):
+        for player in self.playerList.values():
+            if (player.name == None):
+                continue
+        for matches in self.matchHistory:
+            if matches.matchDate == None:
+                continue
+        JSONstring = str(self.__dict__)
+        JSONstring = JSONstring.replace("'",'"')
+        return JSONstring
+    
+    def storeJSON(self, filename="Leaderboard.json"):
+        f = open(filename, "w")
+        f.write(self.getJSON())
+        f.close()
+    
 "Creates a new leaderboard"
 def createLeaderBoard(dbRoot, newBoard = "None"):
     if newBoard == "None":
@@ -299,7 +341,7 @@ def selectLeaderBoard(dbRoot, selectBoard = "None"):
         print("No Leaderboard.")
         print("To create a new Leaderboard, type the name of the game: ")
         usrInp = input()
-        createLeaderBoard(usrInp)
+        createLeaderBoard(dbRoot, usrInp)
         selected = dbRoot[usrInp]
     elif numberOfBoards == 1:
         print("There is only one available board.")
@@ -320,8 +362,7 @@ def selectLeaderBoard(dbRoot, selectBoard = "None"):
             return
         print()
     print("You are now logged into %s's Leaderbord" % selected.nameOfGame)
-    return selected    
-
+    return selected
 
 if  __name__=="__main__":
     
